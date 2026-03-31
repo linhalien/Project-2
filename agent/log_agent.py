@@ -20,7 +20,7 @@ API_URL = config.API_URL
 FILE_AUTH = config.FILE_AUTH
 FILE_SYSLOG = config.FILE_SYSLOG
 FILE_UFW = config.FILE_UFW
-FILE_SNORT = config.FILE_SNORT
+FILE_SURICATA = config.FILE_SURICATA
 
 
 # CẤU HÌNH BATCHING & QUEUE
@@ -40,6 +40,11 @@ SYS_LOG_PATTERN = re.compile(r"^([\d\-T:\.\+]+)\s+(\S+)\s+([^:]+):\s+(.*)$")
 
 # CÁC HÀM XỬ LÝ
 # =========================================================
+# =========================================================
+
+
+# Hiện thông báo popup
+# ==========================================================
 
 def send_desktop_notification(title, message):
     """Hàm gọi lệnh hệ điều hành để popup thông báo lên màn hình Desktop (GUI)"""
@@ -55,12 +60,22 @@ def send_desktop_notification(title, message):
     except Exception:
         pass # Nếu không có GUI hoặc lỗi, bỏ qua tránh làm sập script
 
+
+
+# xử lý tín hiệu tắt máy
+# ==========================================================
+
 def handle_shutdown_signal(signum, frame):
     """Hàm được gọi tự động khi hệ điều hành gửi tín hiệu tắt (SIGTERM/SIGINT)"""
     global shutdown_flag
     print("\n[!] Nhận lệnh tắt hệ thống. Dừng đọc file, chuẩn bị thoát...")
     # Bật cờ tắt máy, các vòng lặp while kiểm tra cờ này sẽ tự động dừng lại
     shutdown_flag = True
+
+
+
+# Hàm phân tích cú pháp log hệ thống
+# ==========================================================
 
 def parse_system_log(raw_text, default_daemon):
     """Hàm phân tích cú pháp 1 dòng log thô thành các trường dữ liệu rời rạc"""
@@ -72,6 +87,11 @@ def parse_system_log(raw_text, default_daemon):
     # Nếu dòng log dị dạng, tự sinh thời gian hiện tại theo chuẩn múi giờ +07:00
     current_time = datetime.now(TZ_VN).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     return current_time, default_daemon
+
+
+
+# Hàm luồng đọc file log (tail -f)
+# ==========================================================
 
 def tail_file_python(file_path, data_type, default_daemon):
     """
@@ -93,6 +113,8 @@ def tail_file_python(file_path, data_type, default_daemon):
             except ValueError:
                 pass
 
+    # vòng lặp ngoài, nếu file log bị xóa (log rotation) thì sẽ tự động mở lại file mới từ đầu (last_pos = 0)
+    # *******************************************************************************************************
     while not shutdown_flag:
         try:
             # Kiểm tra Log Rotation: Nếu kích thước file thực tế < tọa độ đã lưu
@@ -100,7 +122,9 @@ def tail_file_python(file_path, data_type, default_daemon):
             if os.path.exists(file_path):
                 if last_pos > os.path.getsize(file_path):
                     last_pos = 0
-
+            
+            # vòng lặp trong, đọc file log mới sinh ra từ tọa độ đã lưu, ném log vào queue
+            # *******************************************************************************************************
             with open(file_path, 'r') as f:
                 # Đặt pointer thẳng tới tọa độ an toàn
                 f.seek(last_pos)
@@ -128,8 +152,20 @@ def tail_file_python(file_path, data_type, default_daemon):
                     if data_type in ["SYS", "UFW"]:
                         timestamp, daemon_name = parse_system_log(raw_text, default_daemon)
                     else:
-                        # Ép timestamp sinh mới về chuẩn +07:00 thay vì UTC
-                        timestamp = datetime.now(TZ_VN).strftime('%Y-%m-%dT%H:%M:%S+07:00')
+                        # Bóc tách timestamp gốc từ Suricata (Ví dụ: 03/31/2026-23:50:56.131649)
+                        try:
+                            # Lấy cụm text đầu tiên trước khoảng trắng
+                            raw_time_str = raw_text.split()[0]
+                            
+                            # Phân tích cú pháp chuỗi thời gian (Tháng/Ngày/Năm-Giờ:Phút:Giây.Microgiây)
+                            parsed_time = datetime.strptime(raw_time_str, '%m/%d/%Y-%H:%M:%S.%f')
+                            
+                            # Định dạng lại thành chuẩn ISO 8601 +07:00 để đẩy lên AWS
+                            timestamp = parsed_time.strftime('%Y-%m-%dT%H:%M:%S+07:00')
+                        except Exception:
+                            # Fallback dự phòng chỉ dùng khi log bị rách/lỗi cấu trúc
+                            timestamp = datetime.now(TZ_VN).strftime('%Y-%m-%dT%H:%M:%S+07:00')
+                            
                         daemon_name = default_daemon
 
                     # Lấy tọa độ byte mới sau khi đọc xong dòng này
@@ -159,6 +195,11 @@ def tail_file_python(file_path, data_type, default_daemon):
         except Exception as e:
             print(f"[!] Lỗi luồng đọc {file_path}: {str(e)}")
             time.sleep(5)
+
+
+
+# Hàm luồng gửi log lên AWS và cập nhật .pos (ACK)
+# ==========================================================
 
 def batch_and_send():
     """
@@ -216,6 +257,7 @@ def batch_and_send():
             success = False
             
             # Lặp vô hạn cho đến khi lô log này đi lọt
+            # *************************************************************************************************
             while not success:
                 try:
                     # Gửi lên AWS API Gateway
@@ -271,16 +313,20 @@ def batch_and_send():
                     # Ngủ 5 giây rồi vòng lên thử gửi lại lô log này
                     time.sleep(5)
 
+
+# Main thread: Khởi tạo luồng đọc và luồng gửi, giữ cho chương trình chạy liên tục, bắt tín hiệu tắt máy
+# ======================================================================================================
+
 if __name__ == "__main__":
     # Đăng ký hàm handle_shutdown_signal để bắt các lệnh kill tiến trình từ hệ điều hành
     signal.signal(signal.SIGTERM, handle_shutdown_signal)
     signal.signal(signal.SIGINT, handle_shutdown_signal)
 
-    # Khởi tạo 3 luồng đọc chạy song song
+    # Khởi tạo 4 luồng đọc chạy song song
     t_auth = threading.Thread(target=tail_file_python, args=(FILE_AUTH, "SYS", "auth"), daemon=True)
     t_sys = threading.Thread(target=tail_file_python, args=(FILE_SYSLOG, "SYS", "syslog"), daemon=True)
     t_ufw = threading.Thread(target=tail_file_python, args=(FILE_UFW, "UFW", "kernel"), daemon=True)
-    t_snort = threading.Thread(target=tail_file_python, args=(FILE_SNORT, "ALERT", "snort"), daemon=True)
+    t_suricata = threading.Thread(target=tail_file_python, args=(FILE_SURICATA, "ALERT", "suricata"), daemon=True)
     
     # Khởi tạo 1 luồng gửi (Sender)
     t_sender = threading.Thread(target=batch_and_send, daemon=True)
@@ -289,7 +335,7 @@ if __name__ == "__main__":
     t_auth.start()
     t_sys.start()
     t_ufw.start()
-    t_snort.start()
+    t_suricata.start()
     t_sender.start()
 
     # Luồng chính (Main thread) bị nhốt vào vòng lặp này để giữ cho script không bị tắt ngay 

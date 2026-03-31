@@ -7,7 +7,7 @@ API_URL = "https://2uxz2wq2zh.execute-api.ap-southeast-1.amazonaws.com/prod/inge
 FILE_AUTH = "/var/log/auth.log"
 FILE_SYSLOG = "/var/log/syslog"
 FILE_UFW = "/var/log/ufw.log"
-FILE_SNORT = "/var/log/snort/snort.alert.fast"
+FILE_SURICATA = "/var/log/suricata/fast.log"
 
 
 # CẤU HÌNH BATCHING & QUEUE
