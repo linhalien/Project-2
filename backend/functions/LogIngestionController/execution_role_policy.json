@@ -32,5 +32,5 @@
 			]
 		}
 	],
-    "_comment": "(tạm trước khi tạo readme)Vào IAM > Roles > Tạo role mới > Permissions > Add inline policy > JSON, dán đoạn này vào rồi Save lại để cấp quyền cho Lambda thực hiện các thao tác cần thiết với CloudWatch Logs và DynamoDB."
+    "_comment": "(tạm trước khi tạo readme) Vào IAM > Roles > Tạo role mới > Permissions > Add inline policy > JSON, dán đoạn này vào rồi Save lại để cấp quyền cho Lambda thực hiện các thao tác cần thiết với CloudWatch Logs và DynamoDB."
 }
