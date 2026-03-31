@@ -1,0 +1,36 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": [
+				"logs:CreateLogGroup",
+				"logs:CreateLogStream",
+				"logs:PutLogEvents"
+			],
+			"Resource": "arn:aws:logs:*:*:*"
+		},
+		{
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:GetItem"
+			],
+			"Resource": [
+				"arn:aws:dynamodb:ap-southeast-1:*:table/RegisteredDevices"
+			]
+		},
+		{
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:PutItem",
+				"dynamodb:BatchWriteItem"
+			],
+			"Resource": [
+				"arn:aws:dynamodb:ap-southeast-1:*:table/SystemLogs",
+				"arn:aws:dynamodb:ap-southeast-1:*:table/FirewallLogs",
+				"arn:aws:dynamodb:ap-southeast-1:*:table/SecurityAlerts"
+			]
+		}
+	],
+    "_comment": "Vào IAM > Roles > Tạo role mới > Permissions > Add inline policy > JSON, dán đoạn này vào rồi Save lại để cấp quyền cho Lambda thực hiện các thao tác cần thiết với CloudWatch Logs và DynamoDB."
+}
