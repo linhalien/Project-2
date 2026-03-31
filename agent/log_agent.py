@@ -151,11 +151,12 @@ def tail_file_python(file_path, data_type, default_daemon):
                     # Cập nhật biến tọa độ nội bộ để vòng lặp đọc tiếp dòng sau
                     last_pos = current_byte_offset
                     
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             # File chưa được sinh ra, ngủ 5s rồi thử tìm lại
-            print(f"[!] Lỗi luồng đọc {file_path}: {str(e)}") # Thêm dòng này
+            print(f"[!] Lỗi luồng đọc {file_path}: {str(e)}") 
             time.sleep(5)
-        except Exception:
+        except Exception as e:
+            print(f"[!] Lỗi luồng đọc {file_path}: {str(e)}")
             time.sleep(5)
 
 def batch_and_send():
