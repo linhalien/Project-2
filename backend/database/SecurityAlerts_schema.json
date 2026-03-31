@@ -1,0 +1,32 @@
+{
+    "TableName": "SecurityAlerts",
+    "KeySchema": [
+        { "AttributeName": "alert_id", "KeyType": "HASH" },
+        { "AttributeName": "timestamp", "KeyType": "RANGE" }
+    ],
+    "AttributeDefinitions": [
+        { "AttributeName": "alert_id", "AttributeType": "S" },
+        { "AttributeName": "timestamp", "AttributeType": "S" },
+        { "AttributeName": "alert_status", "AttributeType": "S" },
+        { "AttributeName": "attack_type", "AttributeType": "S" }
+    ],
+    "GlobalSecondaryIndexes": [
+        {
+            "IndexName": "StatusIndex",
+            "KeySchema": [
+                { "AttributeName": "alert_status", "KeyType": "HASH" },
+                { "AttributeName": "timestamp", "KeyType": "RANGE" }
+            ],
+            "Projection": { "ProjectionType": "ALL" }
+        },
+        {
+            "IndexName": "AttackTypeIndex",
+            "KeySchema": [
+                { "AttributeName": "attack_type", "KeyType": "HASH" },
+                { "AttributeName": "timestamp", "KeyType": "RANGE" }
+            ],
+            "Projection": { "ProjectionType": "ALL" }
+        }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+}

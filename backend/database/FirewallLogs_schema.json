@@ -1,0 +1,23 @@
+{
+    "TableName": "FirewallLogs",
+    "KeySchema": [
+        { "AttributeName": "device_id", "KeyType": "HASH" },
+        { "AttributeName": "timestamp", "KeyType": "RANGE" }
+    ],
+    "AttributeDefinitions": [
+        { "AttributeName": "device_id", "AttributeType": "S" },
+        { "AttributeName": "timestamp", "AttributeType": "S" },
+        { "AttributeName": "src_ip", "AttributeType": "S" }
+    ],
+    "GlobalSecondaryIndexes": [
+        {
+            "IndexName": "SourceIpIndex",
+            "KeySchema": [
+                { "AttributeName": "src_ip", "KeyType": "HASH" },
+                { "AttributeName": "timestamp", "KeyType": "RANGE" }
+            ],
+            "Projection": { "ProjectionType": "ALL" }
+        }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+}

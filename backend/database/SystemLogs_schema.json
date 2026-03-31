@@ -1,0 +1,23 @@
+{
+    "TableName": "SystemLogs",
+    "KeySchema": [
+        { "AttributeName": "device_id", "KeyType": "HASH" },
+        { "AttributeName": "timestamp", "KeyType": "RANGE" }
+    ],
+    "AttributeDefinitions": [
+        { "AttributeName": "device_id", "AttributeType": "S" },
+        { "AttributeName": "timestamp", "AttributeType": "S" },
+        { "AttributeName": "daemon_name", "AttributeType": "S" }
+    ],
+    "GlobalSecondaryIndexes": [
+        {
+            "IndexName": "DaemonIndex",
+            "KeySchema": [
+                { "AttributeName": "daemon_name", "KeyType": "HASH" },
+                { "AttributeName": "timestamp", "KeyType": "RANGE" }
+            ],
+            "Projection": { "ProjectionType": "ALL" }
+        }
+    ],
+    "BillingMode": "PAY_PER_REQUEST"
+}

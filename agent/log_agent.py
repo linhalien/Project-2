@@ -8,24 +8,25 @@ import signal
 import subprocess
 from datetime import datetime, timezone, timedelta
 TZ_VN = timezone(timedelta(hours=7))
+import config  # Import cấu hình từ file config.py
 
 
 # CẤU HÌNH ĐỊNH DANH & ENDPOINT
 # =========================================================
-DEVICE_ID = "AGENT_MACHINE_001"
-DEVICE_SECRET = "super_secret_key_2026"
-API_URL = "https://2uxz2wq2zh.execute-api.ap-southeast-1.amazonaws.com/prod/ingest"
+DEVICE_ID = config.DEVICE_ID
+DEVICE_SECRET = config.DEVICE_SECRET
+API_URL = config.API_URL
 
-FILE_AUTH = "/var/log/auth.log"
-FILE_SYSLOG = "/var/log/syslog"
-FILE_UFW = "/var/log/ufw.log"
-FILE_SNORT = "/var/log/snort/snort.alert.fast"
+FILE_AUTH = config.FILE_AUTH
+FILE_SYSLOG = config.FILE_SYSLOG
+FILE_UFW = config.FILE_UFW
+FILE_SNORT = config.FILE_SNORT
 
 
 # CẤU HÌNH BATCHING & QUEUE
 # =========================================================
-BATCH_SIZE = 25  
-BATCH_TIMEOUT = 5 
+BATCH_SIZE = config.BATCH_SIZE
+BATCH_TIMEOUT = config.BATCH_TIMEOUT
 
 # Hàng đợi tối đa 10000 dòng. Khi đạt mốc này, lệnh log_queue.put() sẽ chặn đứng (block) luồng đọc, chống tràn RAM
 log_queue = queue.Queue(maxsize=10000)
