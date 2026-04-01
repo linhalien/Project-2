@@ -8,7 +8,7 @@ from datetime import datetime
 # Khởi tạo client kết nối DynamoDB
 dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
 
-# Regex cho Suricata (fasl.log cấu trúc tương tự snort.alert.log) Alert (Giữ nguyên)
+# Regex cho Suricata (fasl.log cấu trúc tương tự snort.alert.log) Alert
 SNORT_PATTERN = re.compile(r"^([\d/:-]+(?:\.\d+)?)\s+\[\*\*\]\s+\[\d+:\d+:\d+\]\s+(.*?)\s+\[\*\*\]\s+\[Classification:\s+(.*?)\]\s+\[Priority:\s+(\d+)\]\s+\{(.*?)\}\s+(.*?)\s+->\s+(.*)$")
 
 class LogIngestionController:
