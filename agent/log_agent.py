@@ -204,7 +204,7 @@ def tail_file_python(file_path, data_type, default_daemon):
 def batch_and_send():
     """
     Luồng gỬI (sender) & Cập nhật .pos (ACK):
-    Rút log từ queue -> Gửi AWS => nếu thành công mới tự tay ghi đè file .pos.
+    Rút log từ queue -> Gửi AWS => nếu thành công mới tự tay ghi đè file .pos
     """
     global shutdown_flag
     last_success_time = time.time()
@@ -229,7 +229,7 @@ def batch_and_send():
 
         # Nếu gom được ít nhất 1 log
         if batch:
-            print(f"\n[*] Đã gom lô {len(batch)} logs. Hàng đợi còn {log_queue.qsize()} logs. Đang đẩy lên AWS...") # THÊM DÒNG NÀY ĐỂ THẤY NÓ HOẠT ĐỘNG
+            print(f"\n[*] Đã gom lô {len(batch)} logs. Hàng đợi còn {log_queue.qsize()} logs. Đang đẩy lên AWS...") 
             pos_updates = {}   # Dictionary tạm để lưu tọa độ byte mới nhất của các file trong lô này (dùng chung cho cả 3 loại log)
             clean_batch = []   # Mảng chứa dữ liệu sạch (chỉ gửi những gì AWS cần)
 
@@ -244,7 +244,7 @@ def batch_and_send():
                 clean_batch.append(clean_log)
                 
                 # Cập nhật tọa độ lớn nhất của file tương ứng, dictionary tự động ghi đè để lấy giá trị cuối cùng của line cuối cùng được đọc
-                # Nếu trong batch này có đủ 3 loại log thì dictionary sẽ lưu tọa độ mới nhất của cả 3 file .pos (3 cặp file_path: byte_offset)
+                # Nếu trong batch này có đủ 3 loại log thì dictionary sẽ lưu tọa độ mới nhất của cả 4 file .pos (4 cặp file_path: byte_offset)
                 pos_updates[log_item["file_path"]] = log_item["byte_offset"]
 
             payload = { "logs": clean_batch }
@@ -264,7 +264,7 @@ def batch_and_send():
                     response = requests.post(API_URL, json=payload, headers=headers, timeout=10)
                     
                     if response.status_code >= 500:
-                        # Lỗi máy chủ AWS (sập, quá tải,...) => ném Exception để nhảy xuống khối except bên dưới (Retry)
+                        # Lỗi máy chủ AWS (sập, quá tải,...) => ném Exception để nhảy xuống khối except bên dưới
                         print(f"[!] AWS 5xx Error ({response.status_code}). Thử gửi lại lô log này...")
                         raise requests.exceptions.RequestException(f"AWS 5xx Error ({response.status_code})")
                         
@@ -297,12 +297,12 @@ def batch_and_send():
                         
                 except requests.exceptions.RequestException as e:
                     # Xử lý khi lỗi mạng hoặc Exception từ 5xx
-                    print(f"[!] BỊ KẸT: Lỗi kết nối mạng hoặc không tìm thấy API: {e}") # THÊM DÒNG NÀY ĐỂ XEM LỖI GÌ
+                    print(f"[!] BỊ KẸT: Lỗi kết nối mạng hoặc không tìm thấy API: {e}") 
                     downtime = time.time() - last_success_time
                     
-                    # Popup thông báo nếu lỗi mạng hơn 300s (5 phút)
-                    if downtime > 300 and not network_down_notified: 
-                        send_desktop_notification("LỖI KẾT NỐI", "Mất kết nối tới AWS Cloud hơn 5 phút. Logs đang bị kẹt.")
+                    # Popup thông báo nếu lỗi mạng hơn 90s
+                    if downtime > 90 and not network_down_notified: 
+                        send_desktop_notification("LỖI KẾT NỐI", "Mất kết nối tới AWS Cloud hơn 1 phút 30 giây. Logs đang bị kẹt.")
                         network_down_notified = True
                     
                     # Nếu đang tắt máy mà bị lỗi mạng -> phá luôn vòng lặp retry để thoát 
