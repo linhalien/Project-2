@@ -1,57 +1,65 @@
-// App.js
-
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Realtime from './pages/Realtime';
+import Landing from './pages/Landing';
 
 const App = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('access_token'));
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // 1. Kiểm tra xem URL có chứa token do Cognito Hosted UI trả về không (dạng Hash Fragment)
-        const hash = window.location.hash;
-        if (hash && hash.includes('access_token')) {
-            const params = new URLSearchParams(hash.substring(1)); // Bỏ dấu #
-            const accessToken = params.get('access_token');
-            
-            if (accessToken) {
-                localStorage.setItem('access_token', accessToken);
-                // Xóa token khỏi thanh URL 
-                window.history.replaceState(null, null, window.location.pathname); 
-                setIsAuthenticated(true);
-            }
-        } else {
-            // 2. Nếu không có trên URL, kiểm tra trong LocalStorage (User đã đăng nhập từ trước)
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                setIsAuthenticated(true);
-            } else {
-                // 3. Nếu không có token -> sang Cognito Hosted UI
-                const cognitoUrl = `${process.env.REACT_APP_COGNITO_DOMAIN}/login?client_id=${process.env.REACT_APP_CLIENT_ID}&response_type=token&scope=email+openid+phone&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}`;
-                window.location.href = cognitoUrl;
-                return; // Dừng chạy code bên dưới
-            }
-        }
-        setIsLoading(false);
-    }, []);
+        const checkAuth = async () => {
+            const searchParams = new URLSearchParams(window.location.search);
+            const code = searchParams.get('code');
 
-    if (isLoading) return <div style={{padding: '50px', textAlign: 'center'}}>Đang xác thực hệ thống...</div>;
+            if (code && !isAuthenticated) {
+                try {
+                    const tokenEndpoint = `${process.env.REACT_APP_COGNITO_DOMAIN}/oauth2/token`;
+                    const bodyParams = new URLSearchParams();
+                    bodyParams.append('grant_type', 'authorization_code');
+                    bodyParams.append('client_id', process.env.REACT_APP_CLIENT_ID);
+                    bodyParams.append('code', code);
+                    bodyParams.append('redirect_uri', process.env.REACT_APP_REDIRECT_URI);
 
-    // 4. Nếu đã xác thực thành công, bọc Layout bên ngoài và cấu hình các trang con
+                    const response = await fetch(tokenEndpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: bodyParams
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        localStorage.setItem('access_token', data.access_token);
+                        localStorage.setItem('id_token', data.id_token);
+                        window.history.replaceState(null, null, window.location.pathname);
+                        setIsAuthenticated(true);
+                    }
+                } catch (error) {
+                    console.error("Auth Error:", error);
+                }
+            }
+            setIsLoading(false);
+        };
+        checkAuth();
+    }, [isAuthenticated]);
+
+    if (isLoading) return <div style={{backgroundColor: '#0f172a', height: '100vh', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Đang khởi tạo hệ thống...</div>;
+
     return (
         <Router>
-            <Layout>
-                <Routes>
-                    {/* Mặc định vào thẳng trang Realtime */}
-                    <Route path="/" element={<Navigate to="/realtime" />} />
-                    <Route path="/realtime" element={<Realtime />} />
-                    {/* Các trang sẽ làm sau */}
-                    <Route path="/search" element={<div style={{padding: 20}}>Màn hình Tra cứu (Đang xây dựng)</div>} />
-                    <Route path="/devices" element={<div style={{padding: 20}}>Màn hình Quản lý thiết bị (Đang xây dựng)</div>} />
-                </Routes>
-            </Layout>
+            <Routes>
+                {/* Trang Landing */}
+                <Route path="/home" element={isAuthenticated ? <Navigate to="/realtime" /> : <Landing />} />
+
+                {/* Các Route bảo mật (Yêu cầu Login) */}
+                <Route path="/realtime" element={isAuthenticated ? <Layout><Realtime /></Layout> : <Navigate to="/home" />} />
+                <Route path="/search" element={isAuthenticated ? <Layout><div style={{padding: 20}}>Tra cứu Logs (Đang code...)</div></Layout> : <Navigate to="/home" />} />
+                <Route path="/devices" element={isAuthenticated ? <Layout><div style={{padding: 20}}>Quản lý Thiết bị (Đang code...)</div></Layout> : <Navigate to="/home" />} />
+
+                {/* Mặc định quay về home */}
+                <Route path="*" element={<Navigate to="/home" />} />
+            </Routes>
         </Router>
     );
 };

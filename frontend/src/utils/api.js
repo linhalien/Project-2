@@ -1,7 +1,7 @@
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export const fetchApi = async (endpoint, options = {}) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('id_token');
     
     const headers = {
         'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ export const fetchApi = async (endpoint, options = {}) => {
         // Nếu Cognito Authorizer trên API Gateway trả về 401 (Hết hạn hoặc sai token)
         if (response.status === 401) {
             localStorage.clear();
-            window.location.href = '/'; // Ép reload để luồng Auth trong App.js đá sang Cognito
+            window.location.href = '/'; 
             return null;
         }
         

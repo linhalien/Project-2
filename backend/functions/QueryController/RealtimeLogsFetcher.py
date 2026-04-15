@@ -73,7 +73,7 @@ class RealtimeFetcher:
     def _query_alerts(self, table):
         """Truy vấn đặc thù cho SecurityAlerts vì UI chỉ yêu cầu status 'NEW'"""
         response = table.query(
-            IndexName='StatusIndex',  
+            IndexName='alert_status-timestamp-indexcd',  
             KeyConditionExpression=Key('alert_status').eq('NEW'),
             ScanIndexForward=False,
             Limit=50,

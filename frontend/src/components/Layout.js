@@ -13,11 +13,14 @@ const Layout = ({ children }) => {
         { path: '/devices', name: 'Quản lý Thiết bị', icon: <Server size={20} /> }
     ];
 
+    
     const handleLogout = () => {
-        localStorage.clear();
-        // Gọi API Logout của Cognito
-        window.location.href = `${process.env.REACT_APP_COGNITO_DOMAIN}/logout?client_id=${process.env.REACT_APP_CLIENT_ID}&logout_uri=${process.env.REACT_APP_REDIRECT_URI}`;
-    };
+    localStorage.clear();
+    const logoutUri = `${process.env.REACT_APP_REDIRECT_URI}/home`;
+    const logoutUrl = `${process.env.REACT_APP_COGNITO_DOMAIN}/logout?client_id=${process.env.REACT_APP_CLIENT_ID}&logout_uri=${logoutUri}`;
+    
+    window.location.href = logoutUrl;
+};
 
     return (
         <div style={{ display: 'flex', height: '100vh', backgroundColor: '#f3f4f6', fontFamily: 'sans-serif' }}>
