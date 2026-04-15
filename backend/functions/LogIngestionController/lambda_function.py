@@ -69,6 +69,7 @@ class LogIngestionController:
                             'device_id': self.device_id,        # Partition key
                             'timestamp': timestamp,             # Sort key
                             'daemon_name': daemon_name,         # Thuộc tính GSI 1
+                            'log_type': 'SYS',                  # Thuộc tính GSI 2, dùng cho realtime fetch
                             'raw_message': raw_msg,
                             'expire_time': expire_time
                         }
@@ -121,7 +122,8 @@ class LogIngestionController:
                             'dst_port': dst_port,
                             'protocol': protocol,
                             'raw_message': raw_msg,             # Giữ lại log thô làm bằng chứng
-                            'expire_time': expire_time
+                            'expire_time': expire_time,
+                            'log_type': 'UFW'                   # Thuộc tính GSI 2, dùng cho realtime fetch
                         }
                     }
                 })
@@ -150,7 +152,8 @@ class LogIngestionController:
                             'severity_level': severity_level,
                             'alert_status': 'NEW',              # Thuộc tính GSI 1
                             'raw_message_ref': raw_msg,
-                            'expire_time': expire_time
+                            'expire_time': expire_time,
+                            'log_type': 'ALERT'                   # Thuộc tính GSI 3, dùng cho realtime fetch
                         }
                     }
                 })
