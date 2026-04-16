@@ -54,7 +54,7 @@ const Landing = () => {
     );
 };
 
-// Component con cho card tính năng
+// Component con 
 const FeatureCard = ({ icon, title, desc }) => (
     <div style={{ backgroundColor: '#1e293b', padding: '30px', borderRadius: '12px', textAlign: 'left', border: '1px solid #334155' }}>
         <div style={{ marginBottom: '15px' }}>{icon}</div>

@@ -14,12 +14,12 @@ def lambda_handler(event, context):
     path = event.get('path', '')
     http_method = event.get('httpMethod', '')
     
-    # Hàm tiện ích để đóng gói Response trả về cho Frontend (BẮT BUỘC phải có CORS headers)
+    # Hàm đóng gói Response trả về cho Frontend (BẮT BUỘC phải có CORS headers)
     def build_response(status_code, body_data):
         return {
             'statusCode': status_code,
             'headers': {
-                'Access-Control-Allow-Origin': '*', # Rất quan trọng -> React không bị lỗi CORS
+                'Access-Control-Allow-Origin': '*', # Tránh lỗi CORS
                 'Access-Control-Allow-Headers': 'Content-Type,Authorization',
                 'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE'
             },
@@ -46,7 +46,7 @@ def lambda_handler(event, context):
             else:
                 return build_response(500, {"status": "error", "message": "Update failed"})
 
-        # LUỒNG 2: Xử lý API Search
+        # LUỒNG 2: Xử lý API Search // chưa hoàn thiện
         elif path == '/search':
             payload = {}
             

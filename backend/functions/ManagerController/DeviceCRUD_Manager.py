@@ -1,3 +1,5 @@
+// chưa hoàn thiện
+
 import boto3
 import uuid
 import secrets

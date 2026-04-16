@@ -1,8 +1,9 @@
+// chưa hoàn thiện
+
 import json
 from AlertStatusUpdater import AlertStatusUpdater
 from DeviceCRUD_Manager import DeviceCRUDManager
 
-# Tận dụng Warm Start: Khởi tạo các object ở ngoài handler để tái sử dụng kết nối DB
 alert_updater = AlertStatusUpdater()
 device_manager = DeviceCRUDManager()
 

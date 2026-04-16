@@ -20,7 +20,7 @@ class RealtimeFetcher:
         Giúp UI hiển thị tên thiết bị thay vì ID uuid khó hiểu
         """
         try:
-            # Lấy toàn bộ thiết bị với projection chỉ cần device_id và device_name để tiết kiệm băng thông
+            # Lấy toàn bộ thiết bị với projection chỉ cần device_id và device_name 
             response = self.tables['devices'].scan(
                 ProjectionExpression="device_id, device_name"
             )

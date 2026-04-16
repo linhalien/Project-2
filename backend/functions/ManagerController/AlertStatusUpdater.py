@@ -1,3 +1,5 @@
+// chưa hoàn thiện
+
 import boto3
 
 dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
@@ -8,7 +10,7 @@ class AlertStatusUpdater:
 
     def update(self, payload):
         alert_id = payload.get('alert_id')
-        timestamp_val = payload.get('timestamp') # Bắt buộc phải có vì là Sort Key
+        timestamp_val = payload.get('timestamp') # Bắt buộc phải có (Sort Key)
         new_status = payload.get('new_status')
 
         # Validate dữ liệu đầu vào
