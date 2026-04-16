@@ -19,22 +19,32 @@ def lambda_handler(event, context):
         return {
             'statusCode': status_code,
             'headers': {
-                'Access-Control-Allow-Origin': '*', # Tránh lỗi CORS
+                'Access-Control-Allow-Origin': '*', # Rất quan trọng -> React không bị lỗi CORS
                 'Access-Control-Allow-Headers': 'Content-Type,Authorization',
                 'Access-Control-Allow-Methods': 'OPTIONS,GET,POST,PUT,DELETE'
             },
-            'body': json.dumps(body_data, ensure_ascii=False) # Đảm bảo không bị lỗi font tiếng Việt
+            'body': json.dumps(body_data, ensure_ascii=False, default=str) # Đảm bảo không bị lỗi font tiếng Việt
         }
 
     try:
-        # LUỒNG 1: Xử lý API Realtime
+        # LUỒNG 1: Xử lý API Realtime (Dành cho Method GET)
         if path.startswith('/dashboard/realtime/') and http_method == 'GET':
-            # Cắt chuỗi để lấy chữ cuối cùng (system, firewall, hoặc alerts)
-            category = path.split('/')[-1] 
-            
-            # Gọi file logic
+            category = path.split('/')[-1]
             data = realtime_fetcher.fetch(category)
             return build_response(200, {"status": "success", "data": data})
+            
+        # LUỒNG 1.5: Xử lý nút Xác nhận xử lý Alert (Dành cho Method PUT)
+        elif path == '/alerts/status' and http_method == 'PUT':
+            payload = json.loads(event.get('body', '{}'))
+            
+            # Lấy alert_id và timestamp từ body FE gửi lên
+            d_id = payload.get('alert_id')
+            ts = payload.get('timestamp')
+            
+            if realtime_fetcher.update_alert(d_id, ts):
+                return build_response(200, {"status": "success"})
+            else:
+                return build_response(500, {"status": "error", "message": "Update failed"})
 
         # LUỒNG 2: Xử lý API Search
         elif path == '/search':
@@ -59,4 +69,4 @@ def lambda_handler(event, context):
 
     except Exception as e:
         print(f"Lỗi tại Router QueryController: {str(e)}")
-        return build_response(500, {"status": "error", "message": "Lỗi nội bộ Server"})
+        return build_response(500, {"status": "error", "message": str(e)})

@@ -1,0 +1,23 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowQueryAndScanLogs",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:Query",
+                "dynamodb:Scan"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:ap-southeast-1:336457598104:table/SystemLogs",
+                "arn:aws:dynamodb:ap-southeast-1:336457598104:table/SystemLogs/index/realtimeFetch",
+                "arn:aws:dynamodb:ap-southeast-1:336457598104:table/FirewallLogs",
+                "arn:aws:dynamodb:ap-southeast-1:336457598104:table/FirewallLogs/index/realtimeFetch",
+                "arn:aws:dynamodb:ap-southeast-1:336457598104:table/SecurityAlerts",
+                "arn:aws:dynamodb:ap-southeast-1:336457598104:table/SecurityAlerts/index/realtimeFetch",
+                "arn:aws:dynamodb:ap-southeast-1:336457598104:table/SecurityAlerts/index/alert_status-timestamp-index",
+                "arn:aws:dynamodb:ap-southeast-1:336457598104:table/RegisteredDevices"
+            ]
+        }
+    ]
+}

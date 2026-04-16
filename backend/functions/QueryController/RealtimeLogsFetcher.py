@@ -26,7 +26,8 @@ class RealtimeFetcher:
             )
             # Trả về dictionary dạng: {devide_id: device_name}
             return {item['device_id']: item.get('device_name', 'Unknown') for item in response.get('Items', [])}
-        except Exception:
+        except Exception as e:
+            print(f"Lỗi không lấy được thiết bị: {str(e)}")
             return {}
 
     def fetch(self, log_category):
@@ -52,7 +53,7 @@ class RealtimeFetcher:
         for item in raw_data:
             d_id = item.get('device_id')
             # Nếu tìm thấy tên trong bản đồ thì gán vào, không thì giữ lại ID làm fallback
-            item['device_name'] = device_map.get(d_id, f"ID: {d_id[:8]}")
+            item['device_name'] = device_map.get(d_id, f"ID: {d_id[:]}")
             # Xóa device_id cũ đi cho gọn payload gửi về Frontend
             if 'device_id' in item: del item['device_id']
 
@@ -71,13 +72,22 @@ class RealtimeFetcher:
         return response.get('Items', [])
 
     def _query_alerts(self, table):
-        """Truy vấn đặc thù cho SecurityAlerts vì UI chỉ yêu cầu status 'NEW'"""
+        """Truy vấn lấy TOÀN BỘ thông tin Alert từ Index"""
         response = table.query(
-            IndexName='alert_status-timestamp-indexcd',  
+            IndexName='alert_status-timestamp-index',
             KeyConditionExpression=Key('alert_status').eq('NEW'),
             ScanIndexForward=False,
-            Limit=50,
-            ProjectionExpression="device_id, attack_type, severity_level, alert_status, #ts",
-            ExpressionAttributeNames={"#ts": "timestamp"}
+            Limit=50
         )
         return response.get('Items', [])
+    
+    def update_alert(self, device_id, timestamp):
+        """Hàm đổi trạng thái alert sang RESOLVED"""
+        try:
+            self.tables['alerts'].update_item(
+                Key={'alert_id': device_id, 'timestamp': timestamp},
+                UpdateExpression="set alert_status = :s",
+                ExpressionAttributeValues={':s': 'RESOLVED'}
+            )
+            return True
+        except Exception: return False

@@ -7,13 +7,22 @@
     "AttributeDefinitions": [
         { "AttributeName": "device_id", "AttributeType": "S" },
         { "AttributeName": "timestamp", "AttributeType": "S" },
-        { "AttributeName": "src_ip", "AttributeType": "S" }
+        { "AttributeName": "src_ip", "AttributeType": "S" },
+        { "AttributeName": "log_type", "AttributeType": "S" }
     ],
     "GlobalSecondaryIndexes": [
         {
             "IndexName": "SourceIpIndex",
             "KeySchema": [
                 { "AttributeName": "src_ip", "KeyType": "HASH" },
+                { "AttributeName": "timestamp", "KeyType": "RANGE" }
+            ],
+            "Projection": { "ProjectionType": "ALL" }
+        },
+        {
+            "IndexName": "realtimeFetch",
+            "KeySchema": [
+                { "AttributeName": "log_type", "KeyType": "HASH" },
                 { "AttributeName": "timestamp", "KeyType": "RANGE" }
             ],
             "Projection": { "ProjectionType": "ALL" }
