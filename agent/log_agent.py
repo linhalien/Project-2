@@ -68,7 +68,7 @@ def send_desktop_notification(title, message):
 def handle_shutdown_signal(signum, frame):
     """Hàm được gọi tự động khi hệ điều hành gửi tín hiệu tắt (SIGTERM/SIGINT)"""
     global shutdown_flag
-    print("\n[!] Nhận lệnh tắt hệ thống. Dừng đọc file, chuẩn bị thoát...")
+    print("\n[!] Nhận lệnh tắt hệ thống. Dừng đọc file.")
     # Bật cờ tắt máy, các vòng lặp while kiểm tra cờ này sẽ tự động dừng lại
     shutdown_flag = True
 
@@ -270,8 +270,8 @@ def batch_and_send():
                         
                     elif response.status_code == 401 or response.status_code == 403:
                         # Bị từ chối do IP (403) hoặc token (401) -> ép success = True để hủy lô log này, tránh lặp vô hạn, kẹt hệ thống
-                        print(f"[!] Lỗi xác thực (HTTP {response.status_code}). Kiểm tra lại token hoặc IP. Bỏ qua lô log này.")
-                        success = True 
+                        print(f"[!] Lỗi xác thực (HTTP {response.status_code}). Kiểm tra lại token hoặc IP.")
+                        raise requests.exceptions.HTTPError(f"Authentication Error (HTTP {response.status_code})")
                     else:
                         # THÀNH CÔNG (HTTP 200)
                         success = True
@@ -293,7 +293,12 @@ def batch_and_send():
                                 with open(filepath + ".pos", 'w') as pf:
                                     pf.write(str(max_offset))
                             except Exception:
-                                pass # Bỏ qua lỗi I/O để luồng gửi đi tiếp
+                                print("Kiểm tra lại quyền ghi file .pos hoặc đường dẫn file .pos để tránh gửi lặp dữ liệu log")
+                                pass # Bỏ qua lỗi I/O để luồng gửi đi tiếp, sẽ bị lặp dữ liệu log nhưng không mất data
+
+                except requests.exceptions.HTTPError as e:
+                    # Xử lý lỗi xác thực (401, 403)
+                    break
                         
                 except requests.exceptions.RequestException as e:
                     # Xử lý khi lỗi mạng hoặc Exception từ 5xx
