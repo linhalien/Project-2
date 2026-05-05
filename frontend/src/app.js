@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './components/Layout';
 import Realtime from './pages/Realtime';
 import Landing from './pages/Landing';
+import Search from './pages/Search';
+import Devices from './pages/Devices';
 
 const App = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('access_token'));
@@ -31,7 +33,7 @@ const App = () => {
                     if (response.ok) {
                         const data = await response.json();
                         localStorage.setItem('access_token', data.access_token);
-                        localStorage.setItem('id_token', data.id_token);
+                        localStorage.setItem('id_token', data.id_token); //kẹp vào header HTTP
                         window.history.replaceState(null, null, window.location.pathname);
                         setIsAuthenticated(true);
                     }
@@ -54,9 +56,8 @@ const App = () => {
 
                 {/* Các Route bảo mật (Yêu cầu Login) */}
                 <Route path="/realtime" element={isAuthenticated ? <Layout><Realtime /></Layout> : <Navigate to="/home" />} />
-                <Route path="/search" element={isAuthenticated ? <Layout><div style={{padding: 20}}>Tra cứu Logs (Đang code...)</div></Layout> : <Navigate to="/home" />} />
-                <Route path="/devices" element={isAuthenticated ? <Layout><div style={{padding: 20}}>Quản lý Thiết bị (Đang code...)</div></Layout> : <Navigate to="/home" />} />
-
+                <Route path="/search" element={isAuthenticated ? <Layout><Search /></Layout> : <Navigate to="/home" />} />
+                <Route path="/devices" element={isAuthenticated ? <Layout><Devices /></Layout> : <Navigate to="/home" />} />
                 {/* Mặc định quay về home */}
                 <Route path="*" element={<Navigate to="/home" />} />
             </Routes>
