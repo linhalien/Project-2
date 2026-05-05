@@ -1,5 +1,3 @@
-// chưa hoàn thiện
-
 import json
 from AlertStatusUpdater import AlertStatusUpdater
 from DeviceCRUD_Manager import DeviceCRUDManager
@@ -42,6 +40,12 @@ def lambda_handler(event, context):
         # LUỒNG 2: Quản lý thiết bị (CRUD)
         # ==========================================
         elif path == '/devices':
+
+            # LẤY DANH SÁCH THIẾT BỊ 
+            if http_method == 'GET':
+                result = device_manager.get_all_devices()
+                status_code = 200 if result['status'] == 'success' else 500
+                return build_response(status_code, result)
             
             # THÊM THIẾT BỊ
             if http_method == 'POST':

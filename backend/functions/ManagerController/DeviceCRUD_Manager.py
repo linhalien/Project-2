@@ -1,5 +1,3 @@
-// chưa hoàn thiện
-
 import boto3
 import uuid
 import secrets
@@ -9,6 +7,20 @@ dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
 class DeviceCRUDManager:
     def __init__(self):
         self.table = dynamodb.Table('RegisteredDevices')
+
+    def get_all_devices(self):
+        """API GET: Lấy danh sách tất cả thiết bị"""
+        try:
+            # Dùng scan() vì bảng thiết bị thường có số lượng bản ghi nhỏ
+            response = self.table.scan()
+            return {
+                "status": "success",
+                "message": "success",
+                "data": response.get('Items', [])
+            }
+        except Exception as e:
+            print(f"Get devices error: {str(e)}")
+            return {"status": "error", "message": "Lỗi DB khi lấy danh sách thiết bị"}
 
     def create_device(self, payload):
         """

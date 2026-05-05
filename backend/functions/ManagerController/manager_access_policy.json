@@ -1,0 +1,25 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowUpdateAlertStatus",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "arn:aws:dynamodb:ap-southeast-1:336457598104:table/SecurityAlerts"
+        },
+        {
+            "Sid": "AllowDeviceCRUD",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:GetItem",
+                "dynamodb:Scan"
+            ],
+            "Resource": "arn:aws:dynamodb:ap-southeast-1:336457598104:table/RegisteredDevices"
+        }
+    ]
+}

@@ -205,7 +205,6 @@ def lambda_handler(event, context):
         
     except json.JSONDecodeError:
         return {'statusCode': 400, 'body': json.dumps({'message': 'Invalid JSON Payload'})}
-        # Bên agent xếp trường hợp này vào "success", còn bên aws sẽ không lưu, coi như log này bị lỗi
     except Exception as e:
         print(f"Lỗi hệ thống: {str(e)}")
         return {'statusCode': 500, 'body': json.dumps({'message': 'Internal Server Error'})}
