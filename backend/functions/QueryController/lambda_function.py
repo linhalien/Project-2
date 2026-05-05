@@ -46,20 +46,13 @@ def lambda_handler(event, context):
             else:
                 return build_response(500, {"status": "error", "message": "Update failed"})
 
-        # LUỒNG 2: Xử lý API Search // chưa hoàn thiện
-        elif path == '/search':
+        # LUỒNG 2: Xử lý API Search 
+        elif path == '/search' and http_method == 'POST':
             payload = {}
-            
-            # Lấy data đầu vào. Xử lý cả 2 trường hợp: FE gửi JSON (POST) hoặc gửi Query Params (GET)
             if event.get('body'):
                 payload = json.loads(event['body'])
-            elif event.get('queryStringParameters'):
-                params = event['queryStringParameters']
-                payload['table_target'] = params.get('table_target')
-                # Tự động gom các tham số lọc còn lại vào mảng 'filters'
-                payload['filters'] = {k: v for k, v in params.items() if k != 'table_target'}
 
-            # Gọi file logic
+            # Gọi file logic AdvancedSearchAPI
             data = search_api.search(payload)
             return build_response(200, {"status": "success", "data": data})
 

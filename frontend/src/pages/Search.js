@@ -33,7 +33,8 @@ const Search = () => {
         SystemLogs: [
             { field: 'device_id', label: 'Device', hint: 'Chọn thiết bị' },
             { field: 'daemon_name', label: 'Daemon Name', hint: 'VD: sshd, sudo, systemd...' },
-            { field: 'severity', label: 'Severity', hint: 'VD: info, warning, err...' }
+            { field: 'severity', label: 'Severity', hint: 'VD: info, warning, err...' },
+            { field: 'raw_message', label: 'Nội dung Log (Raw)', hint: 'Nhập từ khóa cần tìm trong log...' }
         ],
         FirewallLogs: [
             { field: 'device_id', label: 'Device', hint: 'Chọn thiết bị' },
@@ -45,7 +46,8 @@ const Search = () => {
             { field: 'device_id', label: 'Device', hint: 'Chọn thiết bị' },
             { field: 'attack_type', label: 'Attack Type', hint: 'VD: SSH Brute Force, Port Scan' },
             { field: 'severity_level', label: 'Severity Level', hint: 'LOW, MEDIUM, HIGH, CRITICAL' },
-            { field: 'alert_status', label: 'Alert Status', hint: 'NEW / RESOLVED' }
+            { field: 'alert_status', label: 'Alert Status', hint: 'NEW / RESOLVED' },
+            { field: 'raw_message', label: 'Nội dung Log (Raw)', hint: 'Nhập từ khóa cần tìm trong log...' }
         ]
     };
 
@@ -54,8 +56,8 @@ const Search = () => {
         if (newFilters[field] !== undefined) {
             delete newFilters[field];
         } else {
-            // Nếu field là device, lấy tên của thiết bị đầu tiên làm mặc định
-            newFilters[field] = field === 'device' && deviceList.length > 0 ? deviceList[0].device_name : ''; 
+            // Nếu field là device, lấy thiết bị đầu tiên làm mặc định
+            newFilters[field] = field === 'device_id' && deviceList.length > 0 ? deviceList[0].device_id : ''; 
         }
         setActiveFilters(newFilters);
     };
@@ -171,6 +173,18 @@ const Search = () => {
                 {/* CỘT 2: THAM SỐ LỌC */}
                 <div style={{ flex: 2 }}>
                     <h3 style={{ marginTop: 0 }}>Tham số lọc tùy chọn</h3>
+                    {/* HƯỚNG DẪN NHẬP LIỆU */}
+                    <div style={{ backgroundColor: '#eff6ff', padding: '15px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #bfdbfe' }}>
+                        <h4 style={{ margin: '0 0 8px 0', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Info size={18} /> Lưu ý khi nhập từ khóa
+                        </h4>
+                        <ul style={{ margin: 0, paddingLeft: '20px', color: '#1e40af', fontSize: '0.85rem', lineHeight: '1.6' }}>
+                            <li><b>Tìm kiếm tương đối:</b> Chỉ cần nhập một phần của từ khóa. Ví dụ: nhập <i>"scan"</i> sẽ tìm được <i>"Port Scan"</i>.</li>
+                            <li><b>Không phân biệt hoa/thường:</b> Hệ thống tự động nhận diện. Ví dụ: <i>"ALLOW"</i> hay <i>"allow"</i> đều hợp lệ.</li>
+                            <li><b>Kết hợp:</b> Khi tích chọn nhiều ô, hệ thống sẽ lọc các bản ghi thỏa mãn <b>tất cả</b> các điều kiện cùng lúc (AND).</li>
+                            <li><b>Thời gian:</b> Nếu chọn "Tùy chỉnh", bắt buộc phải chọn đầy đủ cả thời điểm Từ và Đến.</li>
+                        </ul>
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         {filterOptions[tableTarget].map(opt => (
                             <div key={opt.field} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -186,7 +200,7 @@ const Search = () => {
                                 
                                 {activeFilters[opt.field] !== undefined && (
                                     <>
-                                        {opt.field === 'device' ? (
+                                        {opt.field === 'device_id' ? (
                                             <select
                                                 value={activeFilters[opt.field]}
                                                 onChange={(e) => setActiveFilters(prev => ({ ...prev, [opt.field]: e.target.value }))}
