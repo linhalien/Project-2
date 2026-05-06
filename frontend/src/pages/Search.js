@@ -33,7 +33,6 @@ const Search = () => {
         SystemLogs: [
             { field: 'device_id', label: 'Device', hint: 'Chọn thiết bị' },
             { field: 'daemon_name', label: 'Daemon Name', hint: 'VD: sshd, sudo, systemd...' },
-            { field: 'severity', label: 'Severity', hint: 'VD: info, warning, err...' },
             { field: 'raw_message', label: 'Nội dung Log (Raw)', hint: 'Nhập từ khóa cần tìm trong log...' }
         ],
         FirewallLogs: [
