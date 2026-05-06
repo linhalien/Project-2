@@ -51,4 +51,4 @@ jobs:
       run: aws s3 sync ./build s3://soc-dashboard-project2-alien --delete
 
     - name: 7. Xóa Cache cũ trên Cloudfront
-      run: aws cloudfront create-invalidation --distribution-id E21QL4GOQ7G7GA --paths "/*"
+      run: aws cloudfront create-invalidation --distribution-id E2MOMI2UBRLMBG --paths "/*"
