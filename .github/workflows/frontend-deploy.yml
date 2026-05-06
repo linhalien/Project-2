@@ -1,10 +1,11 @@
 name: Deploy Frontend to S3 and CloudFront
 
+env:
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # Chỉ kích hoạt khi có code mới đẩy lên nhánh main
 # VÀ phải có sự thay đổi bên trong thư mục 'frontend'
 on:
-  env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   push:
     branches:
       - main
