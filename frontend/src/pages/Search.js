@@ -209,6 +209,18 @@ const Search = () => {
                                                     <option key={dev.device_id} value={dev.device_id}>{dev.device_name}</option>
                                                 ))}
                                             </select>
+                                        ) : opt.field === 'severity_level' ? (
+                                            <select
+                                                value={activeFilters[opt.field]}
+                                                onChange={(e) => setActiveFilters(prev => ({ ...prev, [opt.field]: e.target.value }))}
+                                                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #3b82f6', outline: 'none', width: '100%' }}
+                                            >
+                                                <option value="">-- Chọn mức độ --</option>
+                                                <option value="LOW">LOW</option>
+                                                <option value="MEDIUM">MEDIUM</option>
+                                                <option value="HIGH">HIGH</option>
+                                                <option value="CRITICAL">CRITICAL</option>
+                                            </select>
                                         ) : (
                                             <div style={{ position: 'relative' }}>
                                                 <input 
