@@ -30,7 +30,7 @@ jobs:
     - name: 2. Cài đặt môi trường Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18' 
+        node-version: '24' 
 
     - name: 3. Cài đặt các gói thư viện 
       run: npm install
