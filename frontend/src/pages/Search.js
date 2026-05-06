@@ -221,6 +221,26 @@ const Search = () => {
                                                 <option value="HIGH">HIGH</option>
                                                 <option value="CRITICAL">CRITICAL</option>
                                             </select>
+                                        ) : opt.field === 'action' ? (
+                                            <select
+                                                value={activeFilters[opt.field]}
+                                                onChange={(e) => setActiveFilters(prev => ({ ...prev, [opt.field]: e.target.value }))}
+                                                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #3b82f6', outline: 'none', width: '100%' }}
+                                            >
+                                                <option value="">-- Chọn hành động --</option>
+                                                <option value="ALLOW">ALLOW</option>
+                                                <option value="BLOCK">BLOCK</option>
+                                            </select>
+                                        ) : opt.field === 'alert_status' ? (
+                                            <select
+                                                value={activeFilters[opt.field]}
+                                                onChange={(e) => setActiveFilters(prev => ({ ...prev, [opt.field]: e.target.value }))}
+                                                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #3b82f6', outline: 'none', width: '100%' }}
+                                            >
+                                                <option value="">-- Chọn trạng thái alert --</option>
+                                                <option value="NEW">NEW</option>
+                                                <option value="RESOLVED">RESOLVED</option>
+                                            </select>
                                         ) : (
                                             <div style={{ position: 'relative' }}>
                                                 <input 
