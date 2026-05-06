@@ -13,10 +13,11 @@ export const fetchApi = async (endpoint, options = {}) => {
     try {
         const response = await fetch(`${BASE_URL}${endpoint}`, { ...options, headers });
         
-        // Nếu Cognito Authorizer trên API Gateway trả về 401 (Hết hạn hoặc sai token)
-        if (response.status === 401) {
+        // Nếu Cognito Authorizer trên API Gateway trả về 401 (Hết hạn hoặc sai token) hoặc 403 (Không có quyền), thì xóa token và chuyển về trang login
+        if (response.status === 401 || response.status === 403) {
             localStorage.clear();
-            window.location.href = '/'; 
+            sessionStorage.clear(); // Storage mặc định của react-oidc-context
+            window.location.href = '/home'; // Chuyển về trang landing/login
             return null;
         }
         
