@@ -19,6 +19,7 @@ env/
 backend/.env
 agent/.env
 .pytest_cache/
+agent/config.py
 
 # =========================
 # 3. OS & EDITOR CONFIGS
