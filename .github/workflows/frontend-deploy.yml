@@ -40,6 +40,11 @@ jobs:
 
     - name: 4. Build dự án 
       run: npm run build
+      env:
+        REACT_APP_COGNITO_DOMAIN: ${{ secrets.REACT_APP_COGNITO_DOMAIN }}
+        REACT_APP_CLIENT_ID: ${{ secrets.REACT_APP_CLIENT_ID }}
+        REACT_APP_REDIRECT_URI: ${{ secrets.REACT_APP_REDIRECT_URI }}
+        REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
 
     - name: 5. Xác thực với AWS bằng OIDC Role (Không dùng Access Key)
       uses: aws-actions/configure-aws-credentials@v4

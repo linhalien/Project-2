@@ -109,7 +109,7 @@ const Realtime = () => {
                 {/* DANH SÁCH ALERT (NEW) */}
                 <div style={{ flex: 1, backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                     <h3 style={{ marginTop: 0, marginBottom: '15px', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <AlertCircle size={20} /> Security Alerts ({alerts.length})
+                        <AlertCircle size={20} /> Security Alerts abc({alerts.length})
                     </h3>
                     <div style={tableContainerStyle}>
                         {alerts.map((alert, idx) => (
