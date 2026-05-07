@@ -73,7 +73,7 @@ class DeviceCRUDManager:
             return {"status": "error", "message": "Không có thông tin hợp lệ để sửa"}
 
         # Update động theo các trường mà FE gửi lên (không phải lúc nào FE cũng sửa tất cả trường)
-        # Nếu FE gửi {device_name: "abc", status: "INACTIVE"} -> tự động build ra UpdateExpression tương ứng
+        # Nếu FE gửi {device_name: "abc", status: "INACTIVE"} -> tự động build ra UpdateExpression tương ứng   té
         update_expr = "SET "
         expr_names = {}
         expr_attrs = {}
