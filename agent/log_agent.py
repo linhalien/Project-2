@@ -47,7 +47,7 @@ SYS_LOG_PATTERN = re.compile(r"^([\d\-T:\.\+]+)\s+(\S+)\s+([^:]+):\s+(.*)$")
 # ==========================================================
 
 def send_desktop_notification(title, message):
-    """Hàm gọi lệnh hệ điều hành để popup thông báo lên màn hình Desktop (GUI)"""
+    """Hàm gọi lệnh hệ điều hành để popup thông báo lên màn hình Desktop"""
     try:
         # Gọi tiến trình phụ (subprocess) chạy lệnh notify-send 
         # Cần khai báo đúng DISPLAY và DBUS để popup có thể xuyên từ tiến trình ngầm (systemd) lên màn hình
@@ -105,7 +105,7 @@ def tail_file_python(file_path, data_type, default_daemon):
     # Biến nội bộ lưu tọa độ (offset) pointer trên file hiện tại
     last_pos = 0 
     
-    # Khôi phục trí nhớ: Đọc file .pos (nếu có) để biết tọa độ an toàn cuối cùng đã được gửi thành công
+    # Khôi phục trí nhớ: đọc file .pos (nếu có) để biết tọa độ an toàn cuối cùng đã được gửi thành công
     if os.path.exists(pos_file):
         with open(pos_file, 'r') as pf:
             try:
@@ -143,12 +143,12 @@ def tail_file_python(file_path, data_type, default_daemon):
                             
                         continue # Tiếp tục hóng dòng mới
 
-                    # --- Xử lý dòng log mới ---
+                    # Xử lý dòng log mới 
                     raw_text = line.strip()
                     if not raw_text:
                         continue
 
-                    # Bóc tách dữ liệu tùy theo loại log (RAW hệ thống hoặc ALERT của Snort)
+                    # Bóc tách dữ liệu tùy theo loại log
                     if data_type in ["SYS", "UFW"]:
                         timestamp, daemon_name = parse_system_log(raw_text, default_daemon)
                     else:
@@ -163,7 +163,7 @@ def tail_file_python(file_path, data_type, default_daemon):
                             # Định dạng lại thành chuẩn ISO 8601 +07:00 để đẩy lên AWS
                             timestamp = parsed_time.strftime('%Y-%m-%dT%H:%M:%S+07:00')
                         except Exception:
-                            # Fallback dự phòng chỉ dùng khi log bị rách/lỗi cấu trúc
+                            # Fallback dự phòng chỉ dùng khi log bị lỗi
                             timestamp = datetime.now(TZ_VN).strftime('%Y-%m-%dT%H:%M:%S+07:00')
                             
                         daemon_name = default_daemon
@@ -177,7 +177,7 @@ def tail_file_python(file_path, data_type, default_daemon):
                         "timestamp": timestamp,
                         "daemon_name": daemon_name,
                         "raw_message": raw_text,
-                        "file_path": file_path,          # Bằng chứng nguồn gốc
+                        "file_path": file_path,          # Bằng chứng nguồn gốc đọc
                         "byte_offset": current_byte_offset # Tọa độ sau khi đọc xong dòng này
                     }
                     
@@ -210,7 +210,7 @@ def batch_and_send():
     last_success_time = time.time()
     network_down_notified = False
 
-    # Chạy liên tục kể cả khi có lệnh tắt (shutdown_flag), vẫn cố chạy nốt cho đến khi queue rỗng để vớt vát data
+    # Chạy liên tục
     while not shutdown_flag or not log_queue.empty():
         batch = []
         start_time = time.time()
@@ -269,7 +269,7 @@ def batch_and_send():
                         raise requests.exceptions.RequestException(f"AWS 5xx Error ({response.status_code})")
                         
                     elif response.status_code == 401 or response.status_code == 403:
-                        # Bị từ chối do IP (403) hoặc token (401) -> ép success = True để hủy lô log này, tránh lặp vô hạn, kẹt hệ thống
+                        # Bị từ chối do IP (403) hoặc token (401) -> dừng gửi
                         print(f"[!] Lỗi xác thực (HTTP {response.status_code}). Kiểm tra lại token hoặc IP.")
                         raise requests.exceptions.HTTPError(f"Authentication Error (HTTP {response.status_code})")
                     else:
@@ -292,7 +292,7 @@ def batch_and_send():
                             try:
                                 with open(filepath + ".pos", 'w') as pf:
                                     pf.write(str(max_offset))
-                            except Exception:
+                            except Exception: # Lỗi không ghi được .pos
                                 print("Kiểm tra lại quyền ghi file .pos hoặc đường dẫn file .pos để tránh gửi lặp dữ liệu log")
                                 pass # Bỏ qua lỗi I/O để luồng gửi đi tiếp, sẽ bị lặp dữ liệu log nhưng không mất data
 
@@ -315,7 +315,7 @@ def batch_and_send():
                     if shutdown_flag:
                         break
                         
-                    # Ngủ 5 giây rồi vòng lên thử gửi lại lô log này
+                    # Ngủ 5 giây rồi thử gửi lại lô log này
                     time.sleep(5)
 
 

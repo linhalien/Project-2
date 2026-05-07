@@ -1,0 +1,51 @@
+name: Deploy Backend to AWS Lambda
+
+# Kịch bản này chỉ kích hoạt khi có thay đổi trong thư mục chứa code Lambda
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/functions/**'
+
+# Cấp quyền cho GitHub Actions sinh OIDC token kết nối với AWS
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-lambda:
+    runs-on: ubuntu-latest
+    
+    # Thiết lập thư mục làm việc mặc định
+    defaults:
+      run:
+        working-directory: ./backend/functions
+
+    steps:
+    - name: 1. Kéo mã nguồn từ GitHub
+      uses: actions/checkout@v4
+
+    - name: 2. Xác thực AWS bằng OIDC Role
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::336457598104:role/GitHubActions-CICD-Role
+        aws-region: ap-southeast-1
+
+    - name: 3. Đóng gói và Deploy LogIngestionController
+      run: |
+        cd LogIngestionController
+        zip -r ../LogIngestionController.zip .
+        aws lambda update-function-code --function-name LogIngestionController --zip-file fileb://../LogIngestionController.zip
+
+    - name: 4. Đóng gói và Deploy ManagerController
+      run: |
+        cd ManagerController
+        zip -r ../ManagerController.zip .
+        aws lambda update-function-code --function-name ManagerController --zip-file fileb://../ManagerController.zip
+
+    - name: 5. Đóng gói và Deploy QueryController
+      run: |
+        cd QueryController
+        zip -r ../QueryController.zip .
+        aws lambda update-function-code --function-name QueryController --zip-file fileb://../QueryController.zip

@@ -38,7 +38,7 @@ class LogIngestionController:
         return False
 
     def calculateTTL(self, days_to_live=30):
-        """Tính toán TTL chuẩn Unix Timestamp để AWS tự động xóa log cũ"""
+        """Tính toán TTL để AWS tự động xóa log cũ"""
         return int(time.time()) + (days_to_live * 86400)
 
     def processAndRouteLogs(self):
@@ -54,7 +54,7 @@ class LogIngestionController:
         fw_puts = []
         alert_puts = []
 
-        # Duyệt qua từng log trong lô 25 logs gửi từ agent
+        # Duyệt qua từng log trong lô logs gửi từ agent
         for log in logs:
             data_type = log.get('data_type')
             timestamp = log.get('timestamp')
@@ -86,27 +86,27 @@ class LogIngestionController:
                 # LEN=44 TOS=0x00 PREC=0x00 TTL=57 ID=28399 PROTO=TCP SPT=61105 DPT=80 WINDOW=1024 RES=0x00 SYN URGP=0"
 
 
-                # Bắt hành vi (BLOCK, ALLOW, AUDIT) nằm trong ngoặc vuông [UFW ...]
+                # Bắt hành vi (BLOCK, ALLOW, AUDIT) nằm trong [UFW ...]
                 action_match = re.search(r"\[UFW\s+([A-Z]+)\]", raw_msg)
                 action = action_match.group(1) if action_match else "UNKNOWN"
                 
-                # Bắt IP Nguồn (SRC=...)
+                # Bắt IP nguồn (SRC=...)
                 src_match = re.search(r"SRC=([a-fA-F0-9\.:]+)", raw_msg)
                 src_ip = src_match.group(1) if src_match else "N/A"
                 
-                # Bắt IP Đích (DST=...)
+                # Bắt IP đích (DST=...)
                 dst_match = re.search(r"DST=([a-fA-F0-9\.:]+)", raw_msg)
                 dst_ip = dst_match.group(1) if dst_match else "N/A"
                 
-                # Bắt Cổng Nguồn (SPT=...) 
+                # Bắt port nguồn (SPT=...) 
                 spt_match = re.search(r"SPT=(\d+)", raw_msg)
                 src_port = spt_match.group(1) if spt_match else "N/A"
                 
-                # Bắt Cổng Đích (DPT=...)
+                # Bắt port đích (DPT=...)
                 dpt_match = re.search(r"DPT=(\d+)", raw_msg)
                 dst_port = dpt_match.group(1) if dpt_match else "N/A"
                 
-                # Bắt Giao thức (PROTO=...)
+                # Bắt giao thức (PROTO=...)
                 proto_match = re.search(r"PROTO=([A-Za-z0-9]+)", raw_msg)
                 protocol = proto_match.group(1) if proto_match else "N/A"
 
@@ -121,14 +121,14 @@ class LogIngestionController:
                             'src_port': src_port,
                             'dst_port': dst_port,
                             'protocol': protocol,
-                            'raw_message': raw_msg,             # Giữ lại log thô làm bằng chứng
+                            'raw_message': raw_msg,             # Log raw gốc để tra cứu chi tiết khi cần 
                             'expire_time': expire_time,
                             'log_type': 'UFW'                   # Thuộc tính GSI 2, dùng cho realtime fetch
                         }
                     }
                 })
                 
-            # 3. xử lý log cảnh báo từ suricata (SecurityAlerts)
+            # Xử lý log cảnh báo từ suricata (SecurityAlerts)
             elif data_type == 'ALERT':
                 match = SNORT_PATTERN.search(raw_msg)
                 
@@ -138,7 +138,7 @@ class LogIngestionController:
                 if match:
                     # Bóc loại tấn công từ regex group 2
                     attack_type = match.group(2).strip()
-                    # Bóc mức độ ưu tiên từ regex group 4 và quy đổi sang Level
+                    # Bóc mức độ ưu tiên từ regex group 4 [Priority:...] và quy đổi sang Level
                     priority = int(match.group(4))
                     severity_level = "CRITICAL" if priority == 1 else "HIGH" if priority == 2 else "MEDIUM"
 
@@ -172,7 +172,7 @@ class LogIngestionController:
         # Thực thi ghi xuống DB
         if request_items:
             try:
-                # BatchWriteItem ghi tối đa 25 items 1 lần
+                # BatchWriteItem (lệnh dynamoDB) ghi tối đa 25 items 1 lần
                 # Agent đã khóa BATCH_SIZE = 25 nên mảng request_items sẽ luôn <= 25
                 dynamodb.meta.client.batch_write_item(RequestItems=request_items)
             except Exception as e:
