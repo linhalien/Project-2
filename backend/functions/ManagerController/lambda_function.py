@@ -25,43 +25,40 @@ def lambda_handler(event, context):
         }
 
     try:
-        # Lấy payload từ Body 
+        # Lấy payload  
         payload = {}
         if event.get('body'):
             payload = json.loads(event['body'])
 
         # LUỒNG 1: Đổi trạng thái Alert
-        # ==========================================
         if path == '/alerts/status' and http_method == 'PUT':
             result = alert_updater.update(payload)
             status_code = 200 if result['status'] == 'success' else 400
             return build_response(status_code, result)
 
-        # LUỒNG 2: Quản lý thiết bị (CRUD)
-        # ==========================================
+        # LUỒNG 2: Quản lý thiết bị
         elif path == '/devices':
 
-            # LẤY DANH SÁCH THIẾT BỊ 
+            # Lấy danh sách thiết bị
             if http_method == 'GET':
                 result = device_manager.get_all_devices()
                 status_code = 200 if result['status'] == 'success' else 500
                 return build_response(status_code, result)
             
-            # THÊM THIẾT BỊ
+            # Thêm thiết bị mới
             if http_method == 'POST':
                 result = device_manager.create_device(payload)
                 status_code = 200 if result['status'] == 'success' else 400
                 return build_response(status_code, result)
                 
-            # SỬA THIẾT BỊ
+            # Sua thông tin thiết bị
             elif http_method == 'PUT':
                 result = device_manager.update_device(payload)
                 status_code = 200 if result['status'] == 'success' else 400
                 return build_response(status_code, result)
                 
-            # XÓA THIẾT BỊ
+            # Xoá thiết bị
             elif http_method == 'DELETE':
-                # Đôi khi frontend gửi ID cần xóa qua URL parameter thay vì body
                 if not payload and event.get('queryStringParameters'):
                     payload = event['queryStringParameters']
                 

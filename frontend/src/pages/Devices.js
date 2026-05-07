@@ -8,11 +8,11 @@ const Devices = () => {
     const [formData, setFormData] = useState({ device_name: '', status: 'ACTIVE' });
     const [selectedDevice, setSelectedDevice] = useState(null);
     
-    // State cho Modal Xóa đặc biệt
+    // State đảm bảo sau 10s mới được xóa
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [countdown, setCountdown] = useState(15);
+    const [countdown, setCountdown] = useState(10);
 
-    // Fetch danh sách (Cần API GET /devices phía Backend hỗ trợ)
+    // Fetch danh sách thiết bị
     const fetchDeviceList = async () => {
         try {
             const res = await fetchApi('/devices'); // Giả định bạn sẽ tạo endpoint này
@@ -26,7 +26,7 @@ const Devices = () => {
         fetchDeviceList();
     }, []);
 
-    // Đếm ngược 15s khi bật Popup Xóa
+    // Đếm ngược 10s khi bật Popup Xóa
     useEffect(() => {
         let timer;
         if (showDeleteModal && countdown > 0) {
@@ -37,7 +37,7 @@ const Devices = () => {
         return () => clearInterval(timer);
     }, [showDeleteModal, countdown]);
 
-    // Luồng: Thêm mới
+    // Luồng thêm mới
     const handleAddSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -55,14 +55,14 @@ const Devices = () => {
         }
     };
 
-    // Luồng: Cập nhật
+    // Luồng cập nhật
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
             const res = await fetchApi('/devices', {
                 method: 'PUT',
                 body: JSON.stringify({
-                    device_id: selectedDevice.device_id, // Gửi kèm ID để backend biết sửa cái nào
+                    device_id: selectedDevice.device_id, // ID để xác định thiết bị cần cập nhật
                     device_name: formData.device_name,
                     status: formData.status
                 })
@@ -77,7 +77,7 @@ const Devices = () => {
         }
     };
 
-    // Luồng: Gọi API Xóa (Chỉ được gọi khi countdown = 0)
+    // Luồng gọi API xóa (Chỉ được gọi khi countdown = 0)
     const executeDelete = async () => {
         try {
             const res = await fetchApi(`/devices?device_id=${selectedDevice.device_id}`, {
@@ -95,7 +95,7 @@ const Devices = () => {
     };
 
     const triggerDeleteProcess = () => {
-        setCountdown(15);
+        setCountdown(10);
         setShowDeleteModal(true);
     };
 
@@ -166,7 +166,7 @@ const Devices = () => {
                     
                     <form onSubmit={viewMode === 'add' ? handleAddSubmit : handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                         
-                        {/* Khóa cứng hiển thị ID/Secret nếu là Edit */}
+                        {/* Khóa cứng hiển thị ID/Secret khi chọn Edit */}
                         {viewMode === 'edit' && (
                             <>
                                 <div>
@@ -218,7 +218,7 @@ const Devices = () => {
                 </div>
             )}
 
-            {/* Popup Xóa Đặc Biệt (Bộ đếm 15s) */}
+            {/* Popup Xóa Đặc Biệt (Bộ đếm 10s) */}
             {showDeleteModal && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
                     <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '8px', width: '350px', textAlign: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>

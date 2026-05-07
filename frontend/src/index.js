@@ -4,12 +4,12 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "react-oidc-context";
 
-// Cấu hình chìa khóa kết nối với Cognito
+// Cấu hình key kết nối với Cognito
 const cognitoAuthConfig = {
   authority: process.env.REACT_APP_COGNITO_DOMAIN,
-  client_id: process.env.REACT_APP_CLIENT_ID,
+  client_id: process.env.REACT_APP_CLIENT_ID, // App Client ID của User Pool App Client
   redirect_uri: process.env.REACT_APP_REDIRECT_URI,
-  response_type: "code", // chuẩn OAuth 2.0 - sử dụng Authorization Code Flow
+  response_type: "code", // OAuth 2.0 (Authorization Code Flow)
   scope: "email openid phone",
 }; 
 

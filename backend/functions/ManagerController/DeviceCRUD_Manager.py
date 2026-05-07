@@ -25,13 +25,13 @@ class DeviceCRUDManager:
     def create_device(self, payload):
         """
         API POST: Thêm thiết bị mới
-        FE chỉ cần gửi: {"device_name": "Web Server 1", "status": "ACTIVE"}
+        FE gửi: {"device_name": "abcxyz", "status": "ACTIVE"}
         """
         device_name = payload.get('device_name', 'Unknown Device')
         status = payload.get('status', 'ACTIVE')
 
         # Tự sinh ID và Secret duy nhất
-        # uuid4 để làm Machine-Token, token_hex(32) sinh chuỗi 64 ký tự ngẫu nhiên làm Secret
+        # uuid4 để làm Machine-Token, token_hex(32) sinh chuỗi 64 ký tự ngẫu nhiên làm Secret (sẽ update cách tạo Secret khác đảm bảo không tấn công nội bộ được)
         new_device_id = str(uuid.uuid4())
         new_device_secret = secrets.token_hex(32)
 
@@ -44,7 +44,7 @@ class DeviceCRUDManager:
 
         try:
             self.table.put_item(Item=item)
-            # Trả về nguyên cục item để UI hiển thị Secret ra màn hình 1 lần duy nhất cho Admin copy dán vào Agent
+            # Trả về item để UI hiển thị Secret ra màn hình 1 lần duy nhất cho Admin copy dán vào Agent
             return {
                 "status": "success",
                 "message": "Thêm thiết bị thành công",
@@ -57,13 +57,13 @@ class DeviceCRUDManager:
     def update_device(self, payload):
         """
         API PUT: Sửa thông tin
-        Bảo mật: Lọc sạch payload, không cho phép sửa ID hoặc Secret
+        Lọc sạch payload, không cho phép sửa ID hoặc Secret
         """
         device_id = payload.get('device_id')
         if not device_id:
             return {"status": "error", "message": "Thiếu device_id"}
 
-        # 1. Tạo 1 dict mới, chỉ cho phép giữ lại các trường an toàn (không phải id hoặc secret) để update
+        # Tạo 1 dict mới, chỉ cho phép giữ lại các trường an toàn (không phải id hoặc secret) để update
         allowed_updates = {}
         for key, value in payload.items():
             if key not in ['device_id', 'device_secret']:
@@ -72,7 +72,7 @@ class DeviceCRUDManager:
         if not allowed_updates:
             return {"status": "error", "message": "Không có thông tin hợp lệ để sửa"}
 
-        # 2. Update động theo các trường mà FE gửi lên (không phải lúc nào FE cũng sửa tất cả trường)
+        # Update động theo các trường mà FE gửi lên (không phải lúc nào FE cũng sửa tất cả trường)
         # Nếu FE gửi {device_name: "abc", status: "INACTIVE"} -> tự động build ra UpdateExpression tương ứng
         update_expr = "SET "
         expr_names = {}

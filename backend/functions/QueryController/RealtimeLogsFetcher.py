@@ -17,10 +17,10 @@ class RealtimeFetcher:
     def _get_device_map(self):
         """
         Lấy danh sách tất cả thiết bị để tạo bộ từ điển mapping {id: name}
-        Giúp UI hiển thị tên thiết bị thay vì ID uuid khó hiểu
+        UI hiển thị tên thiết bị thay vì ID 
         """
         try:
-            # Lấy toàn bộ thiết bị với projection chỉ cần device_id và device_name 
+            # Lấy danh sách thiết bị hiện tại đang có
             response = self.tables['devices'].scan(
                 ProjectionExpression="device_id, device_name"
             )
@@ -36,10 +36,10 @@ class RealtimeFetcher:
         if not table:
             return []
 
-        # 1. Lấy bản đồ tên thiết bị trước
+        # Danh sách thiết bị 
         device_map = self._get_device_map()
         
-        # 2. Query lấy dữ liệu thô từ DynamoDB (Tối đa 50 bản ghi mới nhất)
+        # Query lấy dữ liệu thô từ DynamoDB
         if log_category == 'system':
             raw_data = self._query_logs(table, 'SYS', "device_id, daemon_name, #ts", {"#ts": "timestamp"})
         elif log_category == 'firewall':
@@ -49,12 +49,12 @@ class RealtimeFetcher:
         else:
             raw_data = []
 
-        # 3. Duyệt qua dữ liệu thô để thay thế device_id bằng device_name
+        # Map device_id thành device_name để hiển thị
         for item in raw_data:
             d_id = item.get('device_id')
-            # Nếu tìm thấy tên trong bản đồ thì gán vào, không thì giữ lại ID làm fallback
-            item['device_name'] = device_map.get(d_id, f"ID: {d_id[:]}")
-            # Xóa device_id cũ đi cho gọn payload gửi về Frontend
+            # Nếu tìm thấy tên trong bản đồ thì gán vào, không thì để "undefined"
+            item['device_name'] = device_map.get(d_id, f"undefined")
+            # Xóa device_id khỏi payload gửi về FE
             if 'device_id' in item: del item['device_id']
 
         return raw_data

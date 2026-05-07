@@ -2,7 +2,6 @@ import json
 from RealtimeLogsFetcher import RealtimeFetcher
 from AdvancedSearchAPI import AdvancedSearch
 
-# Khởi tạo các object bên ngoài hàm handler để tận dụng cơ chế "Warm Start" của Lambda (giúp API chạy nhanh hơn ở các lần gọi sau)
 realtime_fetcher = RealtimeFetcher()
 search_api = AdvancedSearch()
 
@@ -10,7 +9,7 @@ def lambda_handler(event, context):
     """
     Hàm entry-point mặc định mà AWS Lambda sẽ gọi đầu tiên
     """
-    # Lấy thông tin đường dẫn và phương thức từ API Gateway (Proxy Integration)
+    # Lấy thông tin đường dẫn và phương thức từ API Gateway
     path = event.get('path', '')
     http_method = event.get('httpMethod', '')
     
@@ -27,13 +26,13 @@ def lambda_handler(event, context):
         }
 
     try:
-        # LUỒNG 1: Xử lý API Realtime (Dành cho Method GET)
+        # LUỒNG 1: Xử lý API Realtime (method GET)
         if path.startswith('/dashboard/realtime/') and http_method == 'GET':
             category = path.split('/')[-1]
             data = realtime_fetcher.fetch(category)
             return build_response(200, {"status": "success", "data": data})
             
-        # LUỒNG 1.5: Xử lý nút Xác nhận xử lý Alert (Dành cho Method PUT)
+        # LUỒNG 1.5: Xử lý nút Xác nhận xử lý Alert (method PUT)
         elif path == '/alerts/status' and http_method == 'PUT':
             payload = json.loads(event.get('body', '{}'))
             
@@ -46,7 +45,7 @@ def lambda_handler(event, context):
             else:
                 return build_response(500, {"status": "error", "message": "Update failed"})
 
-        # LUỒNG 2: Xử lý API Search 
+        # LUỒNG 2: Xử lý API Search (method POST)
         elif path == '/search' and http_method == 'POST':
             payload = {}
             if event.get('body'):

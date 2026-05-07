@@ -28,13 +28,12 @@ class AdvancedSearch:
         table = self.tables[table_target]
         log_type_val = self.log_type_map[table_target]
 
-        # 1. Ràng buộc KeyCondition (Chỉ dùng Partition Key + Sort Key cho DynamoDB)
         key_condition = Key('log_type').eq(log_type_val)
         if time_range and time_range.get('start') and time_range.get('end'):
             key_condition = key_condition & Key('timestamp').between(time_range['start'], time_range['end'])
 
         try:
-            # 2. Call DB để lấy tập dữ liệu thô theo thời gian
+            # Call DB để lấy tập dữ liệu thô theo thời gian
             query_kwargs = {
                 'IndexName': 'realtimeFetch',
                 'KeyConditionExpression': key_condition,
@@ -48,7 +47,7 @@ class AdvancedSearch:
             if not filters:
                 return raw_items
 
-            # 3. Lọc dữ liệu (Filter) bằng Python (tìm theo chuỗi con, không phân biệt hoa thường)
+            # Lọc dữ liệu (Filter) bằng Python (tìm theo chuỗi con, không phân biệt hoa thường)
             filtered_items = []
             for item in raw_items:
                 match_all = True
@@ -57,13 +56,12 @@ class AdvancedSearch:
                     item_val = str(item.get(col_name, '')).lower()
                     search_val = str(col_value).lower()
                     
-                    # Dùng toán tử 'in' để kiểm tra xem từ khóa search có nằm trong chuỗi gốc không
-                    # Ví dụ: "scan" in "port scan" -> True
+                    # Kiểm tra xem từ khóa search có nằm trong chuỗi gốc không
                     if search_val not in item_val:
                         match_all = False
-                        break # Dừng kiểm tra nếu có 1 điều kiện bị sai
-                
-                # Chỉ lấy những dòng log thỏa mãn TẤT CẢ các điều kiện (Toán tử AND)
+                        break 
+
+                # Chỉ lấy những dòng log thỏa mãn TẤT CẢ các điều kiện
                 if match_all:
                     filtered_items.append(item)
 

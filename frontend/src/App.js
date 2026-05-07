@@ -54,7 +54,7 @@ const App = () => {
                 {/* Trang Landing */}
                 <Route path="/home" element={isAuthenticated ? <Navigate to="/realtime" /> : <Landing />} />
 
-                {/* Các Route bảo mật (Yêu cầu Login) */}
+                {/* Các Route sau login (Yêu cầu Login) */}
                 <Route path="/realtime" element={isAuthenticated ? <Layout><Realtime /></Layout> : <Navigate to="/home" />} />
                 <Route path="/search" element={isAuthenticated ? <Layout><Search /></Layout> : <Navigate to="/home" />} />
                 <Route path="/devices" element={isAuthenticated ? <Layout><Devices /></Layout> : <Navigate to="/home" />} />

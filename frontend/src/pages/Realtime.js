@@ -10,6 +10,7 @@ const Realtime = () => {
     const [loadingAlerts, setLoadingAlerts] = useState(false);
     const [selectedAlert, setSelectedAlert] = useState(null);
 
+    // Gọi API lấy logs theo tab (system/firewall)
     const fetchLogs = async (type) => {
         setLoadingLogs(true);
         try {
@@ -22,6 +23,7 @@ const Realtime = () => {
         }
     };
 
+    // Gọi API lấy alerts mới nhất
     const fetchAlerts = async () => {
         setLoadingAlerts(true);
         try {
@@ -34,6 +36,7 @@ const Realtime = () => {
         }
     };
 
+    // Xử lý thay đổi trang thái alert 
     const handleResolve = async (alert) => {
         if (!window.confirm("Xác nhận đã xử lý cảnh báo này?")) return;
         try {

@@ -13,7 +13,7 @@ const Search = () => {
     const [selectedLog, setSelectedLog] = useState(null);
     const [deviceList, setDeviceList] = useState([]); // Chứa danh sách thiết bị
 
-    // Lấy danh sách thiết bị ngay khi load trang
+    // Lấy danh sách thiết bị 
     useEffect(() => {
         const getDevices = async () => {
             try {
@@ -28,7 +28,7 @@ const Search = () => {
         getDevices();
     }, []);
 
-    // Cấu hình hướng dẫn format cho các field
+    // Format cho các field
     const filterOptions = {
         SystemLogs: [
             { field: 'device_id', label: 'Device', hint: 'Chọn thiết bị' },
@@ -50,8 +50,10 @@ const Search = () => {
         ]
     };
 
+    // 
     const handleCheckboxChange = (field) => {
         const newFilters = { ...activeFilters };
+        // Nếu là bỏ check -> xóa filter
         if (newFilters[field] !== undefined) {
             delete newFilters[field];
         } else {
@@ -64,7 +66,7 @@ const Search = () => {
     const handleSearch = async () => {
         setLoading(true);
         try {
-            // 1. Tính toán thời gian
+            // Tính toán khoảng thời gian tìm kiếm
             let timeRange = null;
             const now = new Date();
             if (timeOption !== 'all') {
@@ -89,12 +91,12 @@ const Search = () => {
                 }
             }
 
-            // 2. Lọc bỏ filter rỗng
+            // Lọc bỏ filter rỗng
             const cleanFilters = Object.fromEntries(
                 Object.entries(activeFilters).filter(([_, v]) => v.trim() !== '')
             );
 
-            // 3. Gọi API
+            // Gọi API
             const res = await fetchApi('/search', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -171,14 +173,14 @@ const Search = () => {
 
                 {/* CỘT 2: THAM SỐ LỌC */}
                 <div style={{ flex: 2 }}>
-                    <h3 style={{ marginTop: 0 }}>Tham số lọc tùy chọn</h3>
+                    <h3 style={{ marginTop: 0 }}>Tùy chọn tham số lọc</h3>
                     {/* HƯỚNG DẪN NHẬP LIỆU */}
                     <div style={{ backgroundColor: '#eff6ff', padding: '15px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #bfdbfe' }}>
                         <h4 style={{ margin: '0 0 8px 0', color: '#1e3a8a', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Info size={18} /> Lưu ý khi nhập từ khóa
                         </h4>
                         <ul style={{ margin: 0, paddingLeft: '20px', color: '#1e40af', fontSize: '0.85rem', lineHeight: '1.6' }}>
-                            <li><b>Tìm kiếm tương đối:</b> Chỉ cần nhập một phần của từ khóa. Ví dụ: nhập <i>"scan"</i> sẽ tìm được <i>"Port Scan"</i>.</li>
+                            <li><b>Tìm kiếm tương đối:</b> Chỉ cần nhập một phần của từ khóa. Ví dụ: nhập <i>"scan"</i> sẽ bao gồm kết quả có <i>"Port Scan"</i>.</li>
                             <li><b>Không phân biệt hoa/thường:</b> Hệ thống tự động nhận diện. Ví dụ: <i>"ALLOW"</i> hay <i>"allow"</i> đều hợp lệ.</li>
                             <li><b>Kết hợp:</b> Khi tích chọn nhiều ô, hệ thống sẽ lọc các bản ghi thỏa mãn <b>tất cả</b> các điều kiện cùng lúc (AND).</li>
                             <li><b>Thời gian:</b> Nếu chọn "Tùy chỉnh", bắt buộc phải chọn đầy đủ cả thời điểm Từ và Đến.</li>

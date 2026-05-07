@@ -8,7 +8,7 @@ class AlertStatusUpdater:
 
     def update(self, payload):
         alert_id = payload.get('alert_id')
-        timestamp_val = payload.get('timestamp') # Bắt buộc phải có (Sort Key)
+        timestamp_val = payload.get('timestamp') # Sort Key
         new_status = payload.get('new_status')
 
         # Validate dữ liệu đầu vào
@@ -20,7 +20,7 @@ class AlertStatusUpdater:
 
         try:
             response = self.table.update_item(
-                # Cung cấp chính xác bộ khóa chính (Composite Key) để DB định vị record
+                # Composite Key để DB định vị record
                 Key={
                     'alert_id': alert_id,
                     'timestamp': timestamp_val
@@ -30,7 +30,7 @@ class AlertStatusUpdater:
                 ExpressionAttributeValues={
                     ':status_val': new_status
                 },
-                # Trả về data mới sau khi update xong để FE dùng nếu cần
+                # Trả về data mới sau khi update (xóa bản ghi đã update)
                 ReturnValues="UPDATED_NEW" 
             )
             

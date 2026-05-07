@@ -3,14 +3,14 @@ import { Shield, Lock, Activity, BarChart3 } from 'lucide-react';
 
 const Landing = () => {
     const handleLogin = () => {
-    // Redirect sang Cognito với luồng Code
+    // Redirect sang Cognito 
     const cognitoUrl = `${process.env.REACT_APP_COGNITO_DOMAIN}/login?client_id=${process.env.REACT_APP_CLIENT_ID}&response_type=code&scope=email+openid&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}`;
     window.location.href = cognitoUrl;
 };
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: 'white', fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column' }}>
-            {/* Header đơn giản */}
+            {/* Header */}
             <nav style={{ padding: '20px 50px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.4rem', fontWeight: 'bold' }}>
                     <Shield color="#3b82f6" size={32} />

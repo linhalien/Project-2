@@ -5,7 +5,7 @@ export const fetchApi = async (endpoint, options = {}) => {
     
     const headers = {
         'Content-Type': 'application/json',
-        // Nếu có token thì kẹp vào header Authorization
+        // Kẹp token vào header Authorization
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...options.headers,
     };
