@@ -69,12 +69,19 @@ const Search = () => {
             // Tính toán khoảng thời gian tìm kiếm
             let timeRange = null;
             const now = new Date();
+            // Hàm chuyển đổi thời gian sang chuỗi ISO có timezone +07:00 (vì timestamp lưu trong DB là +07:00)
+            const toVNTimeString = (date) => {
+                const tzOffset = 7 * 60 * 60 * 1000;
+                const localTime = new Date(date.getTime() + tzOffset);
+                return localTime.toISOString().replace('.000Z', '+07:00');
+            };
+
             if (timeOption !== 'all') {
                 if (timeOption === 'custom') {
                     if (customTime.start && customTime.end) {
                         timeRange = {
-                            start: new Date(customTime.start).toISOString(),
-                            end: new Date(customTime.end).toISOString()
+                            start: toVNTimeString(new Date(customTime.start)),
+                            end: toVNTimeString(new Date(customTime.end))
                         };
                     } else {
                         alert("Vui lòng chọn đầy đủ thời gian bắt đầu và kết thúc.");
@@ -85,8 +92,8 @@ const Search = () => {
                     const daysMap = { '1d': 1, '3d': 3, '7d': 7 };
                     const past = new Date(now.getTime() - (daysMap[timeOption] * 24 * 60 * 60 * 1000));
                     timeRange = {
-                        start: past.toISOString(),
-                        end: now.toISOString()
+                        start: toVNTimeString(past),
+                        end: toVNTimeString(now)
                     };
                 }
             }

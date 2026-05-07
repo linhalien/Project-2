@@ -297,7 +297,9 @@ def batch_and_send():
                                 pass # Bỏ qua lỗi I/O để luồng gửi đi tiếp, sẽ bị lặp dữ liệu log nhưng không mất data
 
                 except requests.exceptions.HTTPError as e:
-                    # Xử lý lỗi xác thực (401, 403)
+                    # Xử lý lỗi xác thực (401, 403) -> dừng gửi, bật cờ tắt máy để các luồng đọc tự động dừng, không sợ mất log vì chưa cập nhật .pos
+                    # Khi chạy lại chương trình thì mở lại .pos vẫn đang ở tọa độ cũ
+                    shutdown_flag = True
                     break
                         
                 except requests.exceptions.RequestException as e:
@@ -350,5 +352,3 @@ if __name__ == "__main__":
     while not shutdown_flag:
         time.sleep(1)
         
-    # Cho luồng gửi tối đa 5 giây để gửi nốt lô log cuối cùng đang cầm trên tay trước khi tắt hẳn chương trình
-    t_sender.join(timeout=5)
