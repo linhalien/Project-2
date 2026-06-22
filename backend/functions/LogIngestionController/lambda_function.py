@@ -12,24 +12,25 @@ dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
 SNORT_PATTERN = re.compile(r"^([\d/:-]+(?:\.\d+)?)\s+\[\*\*\]\s+\[\d+:\d+:\d+\]\s+(.*?)\s+\[\*\*\]\s+\[Classification:\s+(.*?)\]\s+\[Priority:\s+(\d+)\]\s+\{(.*?)\}\s+(.*?)\s+->\s+(.*)$")
 
 class LogIngestionController:
-    # Đã sửa lại __init__ để nhận trực tiếp token, secret thay vì headers do qua SQS bị mất header
-    def __init__(self, token, secret, payload):
-        self.token = token
-        self.secret = secret
-        self.payload = payload
+    def __init__(self, headers, body):
+        self.headers = headers
+        self.payload = body
         self.device_id = None
 
     def authenticateMachine(self):
         """Xác thực thiết bị qua DynamoDB bảng RegisteredDevices"""
-        if not self.token or not self.secret:
+        token = self.headers.get('machine-token') or self.headers.get('Machine-Token')
+        secret = self.headers.get('machine-secret') or self.headers.get('Machine-Secret')
+
+        if not token or not secret:
             return False
 
         table = dynamodb.Table('RegisteredDevices')
         try:
-            response = table.get_item(Key={'device_id': self.token})
+            response = table.get_item(Key={'device_id': token})
             item = response.get('Item')
-            if item and item.get('device_secret') == self.secret and item.get('status') == 'ACTIVE':
-                self.device_id = self.token
+            if item and item.get('device_secret') == secret and item.get('status') == 'ACTIVE':
+                self.device_id = token
                 return True
         except Exception as e:
             print(f"Lỗi truy vấn Auth: {e}")
@@ -175,46 +176,36 @@ class LogIngestionController:
                 # Agent đã khóa BATCH_SIZE = 25 nên mảng request_items sẽ luôn <= 25
                 dynamodb.meta.client.batch_write_item(RequestItems=request_items)
             except Exception as e:
-                # Quăng lỗi để Lambda chết -> SQS đẩy vào DLQ
-                raise Exception(f"Lỗi BatchWriteItem: {e}")
+                print(f"Lỗi BatchWriteItem: {e}")
 
 
 
-# HÀM ENTRY POINT CHO AWS LAMBDA ĐÃ ĐƯỢC CẬP NHẬT ĐỂ DÙNG SQS TRIGGER
+# HÀM ENTRY POINT CHO AWS LAMBDA
 # =====================================================
 
 def lambda_handler(event, context):
-    # SQS luôn gửi dữ liệu trong mảng 'Records'
-    for record in event.get('Records', []):
-        try:
-            # 1. Parse nội dung JSON từ SQS
-            sqs_body = json.loads(record['body'])
+    try:
+        headers = event.get('headers', {})
+        body = json.loads(event.get('body', '{}'))
+        
+        controller = LogIngestionController(headers, body)
+        
+        if not controller.authenticateMachine():
+            return {
+                'statusCode': 401,
+                'body': json.dumps({'message': 'Unauthorized or Device Blocked'})
+            }
             
-            # 2. Lấy dữ liệu (Dựa vào Mapping Template mới bọc Header vào Body)
-            token = sqs_body.get('machine_token')
-            secret = sqs_body.get('machine_secret')
-            payload = sqs_body.get('data', {})
-            
-            controller = LogIngestionController(token, secret, payload)
-            
-            # 3. Xác thực thiết bị 
-            if not controller.authenticateMachine():
-                # IN RA CẢNH BÁO CHO ADMIN VÀ BỎ QUA (DROP MESSAGE)
-                print(f"Thiết bị {token} không hợp lệ hoặc đã bị khóa. Bỏ qua lô log này.")
-                continue # Nhảy sang xử lý lô tiếp theo, KHÔNG raise Exception, SQS tự xóa
-                
-            # 4. Ghi DB
-            controller.processAndRouteLogs()
-            
-        except json.JSONDecodeError:
-            print("Lỗi: Định dạng JSON từ SQS bị hỏng.")
-            raise Exception("Invalid JSON Payload")
-            
-        except Exception as e:
-            print(f"Lỗi xử lý Record SQS: {str(e)}")
-            # Ném lỗi ra ngoài cho AWS biết quá trình này thất bại
-            raise e 
-            
-    # Khi dùng SQS, việc return 200 không có ý nghĩa với Agent nữa, 
-    # nó chỉ báo cho CloudWatch là hàm đã chạy thành công.
-    return "Processed SQS Batch Successfully"
+        controller.processAndRouteLogs()
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps({'message': 'Logs ingested successfully'})
+        }
+        
+    except json.JSONDecodeError:
+        return {'statusCode': 400, 'body': json.dumps({'message': 'Invalid JSON Payload'})}
+    except Exception as e:
+        print(f"Lỗi hệ thống: {str(e)}")
+        return {'statusCode': 500, 'body': json.dumps({'message': 'Internal Server Error'})}
+    
