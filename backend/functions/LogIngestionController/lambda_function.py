@@ -197,10 +197,11 @@ def lambda_handler(event, context):
             
             controller = LogIngestionController(token, secret, payload)
             
-            # 3. Xác thực thiết bị
+            # 3. Xác thực thiết bị 
             if not controller.authenticateMachine():
-                # BẮT BUỘC dùng raise Exception thay vì return 401 để kích hoạt DLQ
-                raise Exception(f"Unauthorized or Device Blocked. Token: {token}")
+                # IN RA CẢNH BÁO CHO ADMIN VÀ BỎ QUA (DROP MESSAGE)
+                print(f"Thiết bị {token} không hợp lệ hoặc đã bị khóa. Bỏ qua lô log này.")
+                continue # Nhảy sang xử lý lô tiếp theo, KHÔNG raise Exception, SQS tự xóa
                 
             # 4. Ghi DB
             controller.processAndRouteLogs()
