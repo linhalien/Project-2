@@ -28,6 +28,7 @@ Leverages **Amazon API Gateway**, **AWS Lambda**, **Amazon DynamoDB**, **Amazon 
 - Amazon Cognito
 - AWS IAM
 - Amazon CloudFront
+- GitHub Actions (CI/CD)
 - Python
 - Linux
 
